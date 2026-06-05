@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "playwright test",
+    "test:ci": "xvfb-run --auto-servernum --server-args=\"-screen 0 1280x720x24\" npm run test",
     "test:ui": "playwright test --ui",
     "test:chromium": "playwright test --project=chromium",
     "test:example": "playwright test example",

@@ -24,7 +24,13 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ["list"],
-    ["html", { outputDir: "test-results", open: "on-failure" }],
+    [
+      "html",
+      {
+        outputFolder: "playwright-report",
+        open: process.env.CI ? "never" : "on-failure",
+      },
+    ],
     ["json", { outputFile: "test-results/test-results.json" }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -43,10 +49,9 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        headless: false,
         launchOptions: {
-          headless: false,
           args: ["--disable-http2"],
-          // args: ["--headless=new", "--disable-http2"],
         },
       },
     },
