@@ -6,9 +6,9 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: write # Required to commit the report to the gh-pages branch
-  pages: write # Required if deploying directly to GitHub Pages
-  id-token: write # Required for secure OIDC deployment
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -34,16 +34,24 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-      # 1. Deploy the report folder to GitHub Pages
-      - name: Deploy Report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Configure GitHub Pages
+        if: ${{ github.event_name == 'push' && !cancelled() }}
+        uses: actions/configure-pages@v5
+      - name: Upload report for GitHub Pages
+        if: ${{ github.event_name == 'push' && !cancelled() }}
+        uses: actions/upload-pages-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report # Default playwright folder
+          path: playwright-report/
 
-      # 2. Print a clickable link directly into the workflow output
-      - name: Write Link to GitHub Summary
-        if: always()
-        run: |
-          echo "### 🎭 [View Live Playwright Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/) 🎭" >> $GITHUB_STEP_SUMMARY
+  deploy:
+    if: ${{ github.event_name == 'push' && always() }}
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy report to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
