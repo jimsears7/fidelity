@@ -1,0 +1,24 @@
+{
+  "name": "fidelity",
+  "version": "1.0.0",
+  "description": "Stock Plan Services (SPS)",
+  "main": "index.js",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:chromium": "playwright test --project=chromium",
+    "test:example": "playwright test example",
+    "test:debug": "playwright test --debug",
+    "playwright:update": "npm install -D @playwright/test@latest && npm playwright install",
+    "codegen": "npx playwright codegen"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
