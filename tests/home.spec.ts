@@ -1,9 +1,14 @@
 import { test, expect } from "@playwright/test";
 
-test("test", async ({ page }) => {
+test("test", async ({ page }, testInfo) => {
   await page.goto(
     "https://www.fidelity.com/stock-plan-services/fidelity-brokerage-account",
   );
+
+  if (testInfo.project.name === "Mobile Chrome") {
+    await page.getByRole("button", { name: "Open navigation overlay" }).click();
+  }
+
   await expect(
     page.getByRole("link", { name: "Accounts & Trade" }),
   ).toBeVisible();
@@ -23,6 +28,6 @@ test("test", async ({ page }) => {
     page.getByRole("textbox", { name: "search or get a quote, please" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Log in", exact: true }),
+    page.getByRole("link", { name: "Log in", exact: true }).first(),
   ).toBeVisible();
 });
