@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ://microsoft.com # Pin to match your package.json Playwright version
+      # https://mcr.microsoft.com/en-us/artifact/mar/playwright/about
+      image: mcr.microsoft.com/playwright:v1.60.0-noble-amd64 # Pin to match your package.json Playwright version
 
     steps:
       - uses: actions/checkout@v6
