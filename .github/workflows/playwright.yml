@@ -1,10 +1,14 @@
 name: Playwright Tests
+
+# Run this workflow when code is pushed or when a pull request targets the main branches.
 on:
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
 
+# These permissions are intentionally narrow: read the repo, publish a Pages artifact,
+# and request the OIDC token GitHub Pages needs during deployment.
 permissions:
   contents: read
   pages: write
@@ -17,39 +21,64 @@ jobs:
 
     container:
       # https://mcr.microsoft.com/en-us/artifact/mar/playwright/about
-      image: mcr.microsoft.com/playwright:v1.60.0-noble-amd64 # Pin to match your package.json Playwright version
+      # The official Playwright image already includes Linux browser dependencies.
+      # Pin this image to the same major/minor Playwright version used in package.json.
+      image: mcr.microsoft.com/playwright:v1.60.0-noble-amd64
 
     steps:
+      # Pull the repository into the runner so npm and Playwright can see the project files.
       - uses: actions/checkout@v6
+
+      # Install Node and enable npm dependency caching based on package-lock.json.
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: npm
           cache-dependency-path: package-lock.json
+
       - name: Install dependencies
         env:
+          # The container already has Playwright browsers installed, so npm only installs packages.
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        # npm ci installs exactly what is in package-lock.json.
+        # --prefer-offline uses the cache when possible; --no-audit and --no-fund keep CI output focused.
         run: npm ci --prefer-offline --no-audit --no-fund
-      - name: Run Playwright tests
+
+      - name: Run Playwright tests using scripts in package.json
         env:
+          # Playwright runs inside the container as root, so HOME points at root's writable home directory.
           HOME: /root
+        # test:ci wraps `playwright test` in xvfb-run so headed browser settings can run in Linux CI.
+        # typically, browsers run headless in CI, but the Fidelity website blocks headless browsers,
+        # so headed mode is used here to ensure tests run successfully.
         run: npm run test:ci
+
       - name: Prepare report for GitHub Pages
+        # Keep this running after test failures so the report can still be uploaded for debugging.
         if: ${{ !cancelled() }}
         run: |
+          # Disable Jekyll processing so GitHub Pages serves Playwright's files exactly as generated.
           touch playwright-report/.nojekyll
+          # Fail fast if the expected Playwright report data folder was not created.
           test -d playwright-report/data
+          # Confirm at least one trace/data zip exists before publishing the report.
           find playwright-report/data -name '*.zip' -type f -print -quit | grep -q .
+
+      # Keep a downloadable copy of the HTML report on every non-cancelled run.
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
       - name: Configure GitHub Pages
+        # Only pushes publish Pages; pull requests still get the downloadable artifact above.
         if: ${{ github.event_name == 'push' && !cancelled() }}
         uses: actions/configure-pages@v6
+
       - name: Upload report for GitHub Pages
+        # Package the report as a Pages artifact. Hidden files include .nojekyll.
         if: ${{ github.event_name == 'push' && !cancelled() }}
         uses: actions/upload-pages-artifact@v5
         with:
@@ -57,6 +86,7 @@ jobs:
           include-hidden-files: true
 
   deploy:
+    # Run after the test job on pushes, even if tests fail, so the latest report can be published.
     if: ${{ github.event_name == 'push' && always() }}
     needs: test
     runs-on: ubuntu-latest
@@ -66,5 +96,6 @@ jobs:
 
     steps:
       - name: Deploy report to GitHub Pages
+        # Publish the Pages artifact and expose the final URL through steps.deployment.outputs.page_url.
         id: deployment
         uses: actions/deploy-pages@v5

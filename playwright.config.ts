@@ -56,33 +56,33 @@ export default defineConfig({
       },
     },
 
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        headless: false,
-      },
-    },
+    // {
+    //   name: "firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //     headless: false,
+    //   },
+    // },
 
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-        headless: false,
-      },
-    },
+    // {
+    //   name: "webkit",
+    //   use: {
+    //     ...devices["Desktop Safari"],
+    //     headless: false,
+    //   },
+    // },
 
     /* Test against mobile viewports. */
-    {
-      name: "Mobile Chrome",
-      use: {
-        ...devices["Pixel 5"],
-        headless: false,
-        launchOptions: {
-          args: ["--disable-http2"],
-        },
-      },
-    },
+    // {
+    //   name: "Mobile Chrome",
+    //   use: {
+    //     ...devices["Pixel 5"],
+    //     headless: false,
+    //     launchOptions: {
+    //       args: ["--disable-http2"],
+    //     },
+    //   },
+    // },
     // {
     //   name: 'Mobile Safari',
     //   use: { ...devices['iPhone 12'] },
