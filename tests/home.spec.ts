@@ -5,6 +5,7 @@ test("test", async ({ page }, testInfo) => {
     "https://www.fidelity.com/stock-plan-services/fidelity-brokerage-account",
   );
 
+  // One of step for mobile to open hamburger menu
   if (testInfo.project.name === "Mobile Chrome") {
     await page.getByRole("button", { name: "Open navigation overlay" }).click();
   }
